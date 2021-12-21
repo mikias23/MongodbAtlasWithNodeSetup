@@ -4,17 +4,28 @@ const bodyParser= require('body-parser');
 
 const cors = require('cors')
 const app = express();
-//const renters = require('./routes/renters');
+const Renter = require('./renters');
 const mongoose = require('mongoose');
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
-mongoose.connect("mongodb+srv://mikias:mikias@meanstack.4rgsh.mongodb.net/Trial?retryWrites=true&w=majority", {
+ mongoose.connect("mongodb+srv://mikiasaytenfisu:mikiad@meanstack.4rgsh.mongodb.net/Trial?retryWrites=true&w=majority", {
     useNewUrlParser: true,
-    useUnifiedTopology:true,
-});
+   
+    useUnifiedTopology: true
+}) .then(() => console.log('MongoDB connected...'))
+.catch(err => console.log(err));;
 
-mongoose.connection.on('connected', ()=> {
-    console.log('Database Connected to  '+ 'mongodb://localhost:27017/houseRent')})
+
+
+// const { MongoClient } = require('mongodb');
+// const uri = "mongodb+srv://mikiasaytenfisu:mikiad@meanstack.4rgsh.mongodb.net/Trial?retryWrites=true&w=majority";
+// const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+// client.connect(err => {
+//   const collection = client.db("test").collection("devices");
+//   // perform actions on the collection object
+//   client.close();
+// });
+
 
 app.use(cors());
     
@@ -26,17 +37,6 @@ app.use( express.static(path.join(__dirname, 'public')));
 
 
 
-const RenterSchema = mongoose.Schema({
-
-    username:{
-        type: String,
-        required: true
-    },
-    
-
-})
-
-const Renter = mongoose.model('Renter', RenterSchema);
 
 
 app.get('*', (req, res) => {
@@ -44,18 +44,40 @@ app.get('*', (req, res) => {
 })
 
 
-app.post('/post', (req,res) => {
+app.post('/post', async (req,res) => {
 
-    let username = req.body.username
+    let username = req.body.username;
+    const newrenter = new Renter({username: username});
+      
+        try {
+          await newrenter.save();
+          res.sendFile(path.join(__dirname, 'public/index.html'));
+        } catch (error) {
+          response.status(500).send(error);
+        }
+    
 
-    console.log(username)
-    let newRenter = new Renter({
-    username:username
-});
-newRenter.save();
-res.sendFile(path.join(__dirname, 'public/index.html'));
+  
 })
 
 app.listen(port, ()=> {
     console.log('Server Connected')
 })
+
+
+//  async function run() {
+//     try {
+//         await client.connect();
+//       const database = client.db("Trial");
+//       const haiku = database.collection("renters");
+//       // create a document to insert
+//       const doc = {
+//         username: username
+//       }
+//       const result = await haiku.insertOne(doc);
+//       console.log(`A document was inserted with the _id: ${result.insertedId}`);
+//     } finally {
+//       await client.close();
+//     }
+//   }
+//   run().catch(console.dir);
